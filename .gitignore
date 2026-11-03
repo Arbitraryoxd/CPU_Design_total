@@ -1,0 +1,43 @@
+# Vivado project outputs
+CPU_Design_total.cache/
+CPU_Design_total.hw/
+CPU_Design_total.ip_user_files/
+CPU_Design_total.runs/
+CPU_Design_total.sim/
+.Xil/
+**/synth/
+**/sim/
+**/simulation/
+**/example_design/
+CPU_Design_total.srcs/sources_1/ip/**/hdl/
+CPU_Design_total.srcs/sources_1/ip/**/doc/
+CPU_Design_total.srcs/sources_1/ip/**/misc/
+CPU_Design_total.srcs/sources_1/ip/**/user_design/
+CPU_Design_total.srcs/sources_1/ip/**/*.xml
+CPU_Design_total.srcs/sources_1/ip/**/*_xmdf.tcl
+CPU_Design_total.srcs/sources_1/ip/**/*.vh
+CPU_Design_total.srcs/sources_1/ip/**/*.mif
+CPU_Design_total.srcs/sources_1/ip/**/xil_txt.in
+CPU_Design_total.srcs/sources_1/ip/**/xil_txt.out
+
+# Generated netlists, checkpoints, and reports
+*.dcp
+*_sim_netlist.v
+*_sim_netlist.vhdl
+*_stub.v
+*_stub.vhdl
+*.vho
+*.veo
+*.bit
+*.ltx
+*.rpt
+*.pb
+*.rpx
+*.wdb
+*.wdf
+*.jou
+*.log
+
+# Local editor and operating-system files
+.DS_Store
+Thumbs.db
