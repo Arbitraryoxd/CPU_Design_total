@@ -11,6 +11,8 @@ module wishbone_bus_if(
     cpu_we_i,
     cpu_sel_i,
     cpu_data_o,
+    cpu_data_addr_o,
+    cpu_data_valid_o,
     wishbone_data_i,
     wishbone_ack_i,
     wishbone_addr_o,
@@ -24,36 +26,40 @@ module wishbone_bus_if(
 
     input wire                  clk;
     input wire                  rst;
-    //À´×ÔCTRLÄ£¿é
-    input wire[5:0]             stall_i;            //CTRLÄ£¿é´«ÈëµÄÁ÷Ë®ÏßÔİÍ£ĞÅºÅ
-    input wire                  flush_i;            //CTRLÄ£¿é´«ÈëµÄÁ÷Ë®ÏßÇå³ıĞÅºÅ
-    //CPU²àµÄ½Ó¿Ú
-    input wire                  cpu_ce_i;           //À´×Ô´¦ÀíÆ÷µÄ·ÃÎÊÇëÇóĞÅºÅ
-    input wire[`RegBus]         cpu_data_i;         //À´×Ô´¦ÀíÆ÷µÄÊı¾İ
-    input wire[`RegBus]         cpu_addr_i;         //À´×Ô´¦ÀíÆ÷µÄµØÖ·ĞÅºÅ
-    input wire                  cpu_we_i;           //À´×Ô´¦ÀíÆ÷µÄĞ´²Ù×÷Ö¸Ê¾ĞÅºÅ
-    input wire[3:0]             cpu_sel_i;          //À´×Ô´¦ÀíÆ÷µÄ×Ö½ÚÑ¡ÔñĞÅºÅ
-    output reg[`RegBus]         cpu_data_o;         //Êä³öµ½´¦ÀíÆ÷µÄÊı¾İ
-    //Wighbone²àµÄ½Ó¿Ú
-    input wire[`RegBus]         wishbone_data_i;    //Wishbone×ÜÏßÊäÈëµÄÊı¾İ
-    input wire                  wishbone_ack_i;     //Wishbone×ÜÏßÊäÈëµÄÏìÓ¦
-    output reg[`RegBus]         wishbone_addr_o;    //Wishbone×ÜÏßÊä³öµÄµØÖ·
-    output reg[`RegBus]         wishbone_data_o;    //Wishbone×ÜÏßÊä³öµÄÊı¾İ
-    output reg                  wishbone_we_o;      //Wishbone×ÜÏßĞ´Ê¹ÄÜĞÅºÅ
-    output reg[3:0]             wishbone_sel_o;     //Wishbone×ÜÏß×Ö½ÚÑ¡ÔñĞÅºÅ
-    output reg                  wishbone_stb_o;     //Wishbone×ÜÏßÑ¡Í¨ĞÅºÅ
-    output reg                  wishbone_cyc_o;     //Wishbone×ÜÏßÖÜÆÚĞÅºÅ
-    output reg                  stallreq;           //ÇëÇóÁ÷Ë®ÏßÔİÍ£µÄĞÅºÅ
+    //æ¥è‡ªCTRLæ¨¡å—
+    input wire[5:0]             stall_i;            //CTRLæ¨¡å—ä¼ å…¥çš„æµæ°´çº¿æš‚åœä¿¡å·
+    input wire                  flush_i;            //CTRLæ¨¡å—ä¼ å…¥çš„æµæ°´çº¿æ¸…é™¤ä¿¡å·
+    //CPUä¾§çš„æ¥å£
+    input wire                  cpu_ce_i;           //æ¥è‡ªå¤„ç†å™¨çš„è®¿é—®è¯·æ±‚ä¿¡å·
+    input wire[`RegBus]         cpu_data_i;         //æ¥è‡ªå¤„ç†å™¨çš„æ•°æ®
+    input wire[`RegBus]         cpu_addr_i;         //æ¥è‡ªå¤„ç†å™¨çš„åœ°å€ä¿¡å·
+    input wire                  cpu_we_i;           //æ¥è‡ªå¤„ç†å™¨çš„å†™æ“ä½œæŒ‡ç¤ºä¿¡å·
+    input wire[3:0]             cpu_sel_i;          //æ¥è‡ªå¤„ç†å™¨çš„å­—èŠ‚é€‰æ‹©ä¿¡å·
+    output reg[`RegBus]         cpu_data_o;         //è¾“å‡ºåˆ°å¤„ç†å™¨çš„æ•°æ®
+    output reg[`RegBus]         cpu_data_addr_o;    //è¯»å“åº”æ‰€å¯¹åº”çš„è¯·æ±‚åœ°å€
+    output reg                  cpu_data_valid_o;   //è¯»å“åº”æœ‰æ•ˆï¼Œä¾›å–æŒ‡é˜Ÿåˆ—å†™å…¥å£ä½¿ç”¨
+    //Wighboneä¾§çš„æ¥å£
+    input wire[`RegBus]         wishbone_data_i;    //Wishboneæ€»çº¿è¾“å…¥çš„æ•°æ®
+    input wire                  wishbone_ack_i;     //Wishboneæ€»çº¿è¾“å…¥çš„å“åº”
+    output reg[`RegBus]         wishbone_addr_o;    //Wishboneæ€»çº¿è¾“å‡ºçš„åœ°å€
+    output reg[`RegBus]         wishbone_data_o;    //Wishboneæ€»çº¿è¾“å‡ºçš„æ•°æ®
+    output reg                  wishbone_we_o;      //Wishboneæ€»çº¿å†™ä½¿èƒ½ä¿¡å·
+    output reg[3:0]             wishbone_sel_o;     //Wishboneæ€»çº¿å­—èŠ‚é€‰æ‹©ä¿¡å·
+    output reg                  wishbone_stb_o;     //Wishboneæ€»çº¿é€‰é€šä¿¡å·
+    output reg                  wishbone_cyc_o;     //Wishboneæ€»çº¿å‘¨æœŸä¿¡å·
+    output reg                  stallreq;           //è¯·æ±‚æµæ°´çº¿æš‚åœçš„ä¿¡å·
     
     
     
-    reg[1:0]                    wishbone_state;//±£´æWighbone×ÜÏß½Ó¿ÚÄ£¿éµÄ×´Ì¬
-    reg[`RegBus]                rd_buf;//¼Ä´æÍ¨¹ıWishbone×ÜÏß·ÃÎÊµ½µÄÊı¾İ
+    reg[1:0]                    wishbone_state;//ä¿å­˜Wighboneæ€»çº¿æ¥å£æ¨¡å—çš„çŠ¶æ€
+    reg[`RegBus]                rd_buf;//å¯„å­˜é€šè¿‡Wishboneæ€»çº¿è®¿é—®åˆ°çš„æ•°æ®
+    reg[`RegBus]                rd_addr_buf;//è¯»å“åº”æ•°æ®å¯¹åº”çš„åœ°å€
+    reg                         rd_valid_buf;
     
-    //¿ØÖÆ×´Ì¬×ª»¯µÄÊ±ĞòµçÂ·
+    //æ§åˆ¶çŠ¶æ€è½¬åŒ–çš„æ—¶åºç”µè·¯
     always @(posedge clk)begin
         if(rst == `RstEnable)begin
-            wishbone_state<=`WB_IDLE;//½øÈëWB_IDLE×´Ì¬
+            wishbone_state<=`WB_IDLE;//è¿›å…¥WB_IDLEçŠ¶æ€
             wishbone_addr_o<=`ZeroWord;
             wishbone_data_o<=`ZeroWord;
             wishbone_we_o<=`WriteDisable;
@@ -61,9 +67,11 @@ module wishbone_bus_if(
             wishbone_stb_o<=1'b0;
             wishbone_cyc_o<=1'b0;
             rd_buf<=`ZeroWord;
+            rd_addr_buf<=`ZeroWord;
+            rd_valid_buf<=1'b0;
         end else begin
             case(wishbone_state)
-                `WB_IDLE:begin//WB_IDLE×´Ì¬
+                `WB_IDLE:begin//WB_IDLEçŠ¶æ€
                     if((cpu_ce_i == 1'b1) && (flush_i == `False_v))begin
                         wishbone_stb_o<=1'b1;
                         wishbone_cyc_o<=1'b1;
@@ -71,12 +79,15 @@ module wishbone_bus_if(
                         wishbone_data_o<=cpu_data_i;
                         wishbone_we_o<=cpu_we_i;
                         wishbone_sel_o<=cpu_sel_i;
-                        wishbone_state<=`WB_BUSY;   //½øÈëWB_BUSY×´Ì¬
+                        wishbone_state<=`WB_BUSY;   //è¿›å…¥WB_BUSYçŠ¶æ€
                         rd_buf<=`ZeroWord;
+                        rd_valid_buf<=1'b0;
                     end
                 end
-                `WB_BUSY:begin//WB_BUSY×´Ì¬
-                    if(wishbone_ack_i == 1'b1)begin//ÊÕµ½ÁË×ÜÏßÓ¦´ğĞÅºÅÔò½øÈëWB_IDLE×´Ì¬
+                `WB_BUSY:begin//WB_BUSYçŠ¶æ€
+                    if(flush_i == `True_v)begin
+                        // åˆ†æ”¯æˆ–å¼‚å¸¸å†²åˆ·ä¼˜å…ˆäºåŒå‘¨æœŸæ€»çº¿åº”ç­”ï¼Œé¿å…é”™è¯¯è·¯å¾„
+                        // çš„å–æŒ‡ç»“æœå†™å…¥å–æŒ‡é˜Ÿåˆ—ã€‚
                         wishbone_stb_o<=1'b0;
                         wishbone_cyc_o<=1'b0;
                         wishbone_addr_o<=`ZeroWord;
@@ -84,27 +95,40 @@ module wishbone_bus_if(
                         wishbone_we_o<=`WriteDisable;
                         wishbone_sel_o<=4'b0000;
                         wishbone_state<=`WB_IDLE;
-                        if(cpu_we_i == `WriteDisable)begin
+                        rd_buf<=`ZeroWord;
+                        rd_addr_buf<=`ZeroWord;
+                        rd_valid_buf<=1'b0;
+                    end else if(wishbone_ack_i == 1'b1)begin//æ”¶åˆ°äº†æ€»çº¿åº”ç­”ä¿¡å·åˆ™è¿›å…¥WB_IDLEçŠ¶æ€
+                        wishbone_stb_o<=1'b0;
+                        wishbone_cyc_o<=1'b0;
+                        wishbone_addr_o<=`ZeroWord;
+                        wishbone_data_o<=`ZeroWord;
+                        wishbone_we_o<=`WriteDisable;
+                        wishbone_sel_o<=4'b0000;
+                        wishbone_state<=`WB_IDLE;
+                        if(wishbone_we_o == `WriteDisable)begin
                             rd_buf<=wishbone_data_i;
+                            rd_addr_buf<=wishbone_addr_o;
+                        end else begin
+                            rd_addr_buf<=`ZeroWord;
                         end
-                        if(stall_i != 6'b000000)begin//Ò»µ©·¢ÉúÁËÔİÍ££¬Á¢¿ÌÇĞ»»×´Ì¬
-                            wishbone_state<=`WB_WAIT_FOR_STALL;//½øÈëWB_WAIT_FOR_STALL×´Ì¬
+                        rd_valid_buf<=(wishbone_we_o == `WriteDisable);
+                        if(stall_i != 6'b000000)begin//ä¸€æ—¦å‘ç”Ÿäº†æš‚åœï¼Œç«‹åˆ»åˆ‡æ¢çŠ¶æ€
+                            wishbone_state<=`WB_WAIT_FOR_STALL;//è¿›å…¥WB_WAIT_FOR_STALLçŠ¶æ€
                         end
-                    end else if(flush_i == `True_v)begin//Èç¹ûÁ÷Ë®ÏßÇå³ı,Ö±½Ó·µ»ØIDLE×´Ì¬
-                        wishbone_stb_o<=1'b0;
-                        wishbone_cyc_o<=1'b0;
-                        wishbone_addr_o<=`ZeroWord;
-                        wishbone_data_o<=`ZeroWord;
-                        wishbone_we_o<=`WriteDisable;
-                        wishbone_sel_o<=4'b0000;
-                        wishbone_state<=`WB_IDLE;
-                        rd_buf<=`ZeroWord;
                     end
                 end
-                `WB_WAIT_FOR_STALL:begin//½øÈëWB_WAIT_FOR_STALL×´Ì¬
-                    //WAITFORSTALL×´Ì¬Ê±£¬±£´æÒ»ÇĞ×´Ì¬£¬µ«ÊÇstall_iÖ»ÒªÎª0£¬Á¢¿Ì»Ö¸´
-                    if(stall_i == 6'b000000)begin
+                `WB_WAIT_FOR_STALL:begin//è¿›å…¥WB_WAIT_FOR_STALLçŠ¶æ€
+                    //WAITFORSTALLçŠ¶æ€æ—¶ï¼Œä¿å­˜ä¸€åˆ‡çŠ¶æ€ï¼Œä½†æ˜¯stall_iåªè¦ä¸º0ï¼Œç«‹åˆ»æ¢å¤
+                    if(flush_i == `True_v)begin
                         wishbone_state<=`WB_IDLE;
+                        rd_buf<=`ZeroWord;
+                        rd_addr_buf<=`ZeroWord;
+                        rd_valid_buf<=1'b0;
+                    end else if(stall_i == 6'b000000)begin
+                        wishbone_state<=`WB_IDLE;
+                        rd_addr_buf<=`ZeroWord;
+                        rd_valid_buf<=1'b0;
                     end
                 end
                 default:begin
@@ -113,25 +137,38 @@ module wishbone_bus_if(
         end
     end
     
-    //¸ø´¦ÀíÆ÷½Ó¿ÚĞÅºÅ¸³ÖµµÄ×éºÏµçÂ·
+    //ç»™å¤„ç†å™¨æ¥å£ä¿¡å·èµ‹å€¼çš„ç»„åˆç”µè·¯
     always @(*)begin
         if(rst == `RstEnable)begin
-            stallreq<=`NoStop;//²»½øĞĞÔİÍ£ÇëÇó
+            stallreq<=`NoStop;//ä¸è¿›è¡Œæš‚åœè¯·æ±‚
             cpu_data_o<=`ZeroWord;
+            cpu_data_addr_o<=`ZeroWord;
+            cpu_data_valid_o<=1'b0;
+        end else if(flush_i == `True_v)begin
+            stallreq<=`NoStop;
+            cpu_data_o<=`ZeroWord;
+            cpu_data_addr_o<=`ZeroWord;
+            cpu_data_valid_o<=1'b0;
         end else begin
             stallreq<=`NoStop;
+            cpu_data_addr_o<=`ZeroWord;
+            cpu_data_valid_o<=1'b0;
             case(wishbone_state)
-                `WB_IDLE:begin//WB_IDLE×´Ì¬
+                `WB_IDLE:begin//WB_IDLEçŠ¶æ€
                     if((cpu_ce_i == 1'b1) && (flush_i == `False_v))begin
                         stallreq<=`Stop;
                         cpu_data_o<=`ZeroWord;
                     end
                 end
-                `WB_BUSY:begin//WB_BUSY×´Ì¬
+                `WB_BUSY:begin//WB_BUSYçŠ¶æ€
                     if(wishbone_ack_i == 1'b1)begin
                         stallreq<=`NoStop;
                         if(wishbone_we_o == `WriteDisable)begin
                             cpu_data_o<=wishbone_data_i;
+                            cpu_data_addr_o<=wishbone_addr_o;
+                            if((stall_i == 6'b000000) && (flush_i == `False_v))begin
+                                cpu_data_valid_o<=1'b1;
+                            end
                         end else begin
                             cpu_data_o<=`ZeroWord;
                         end
@@ -140,9 +177,13 @@ module wishbone_bus_if(
                         cpu_data_o<=`ZeroWord;
                     end
                 end
-                `WB_WAIT_FOR_STALL:begin//WB_WAIT_FOR_STALL×´Ì¬
+                `WB_WAIT_FOR_STALL:begin//WB_WAIT_FOR_STALLçŠ¶æ€
                     stallreq<=`NoStop;
                     cpu_data_o<=rd_buf;
+                    cpu_data_addr_o<=rd_addr_buf;
+                    if((stall_i == 6'b000000) && (flush_i == `False_v))begin
+                        cpu_data_valid_o<=rd_valid_buf;
+                    end
                 end
                 default:begin
                 end
